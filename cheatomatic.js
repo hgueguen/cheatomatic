@@ -1,30 +1,33 @@
-// ====		LA DATE
-var START_DATE = "Mon 15.2"
+// ====		GLOBALS
+var DATE = "Mon 8.2."
 var	RETRY_TIME = 10000
 
 
 // ====		INITIALISAGE
 var casper = require('casper').create({
 	verbose: true,
-	logLevel: 'debug'
+	//logLevel: 'info'
 });
 casper.options.waitTimeout = 10000;
 var mouse = require("mouse").create(casper);
 
 // ====		LES FONCTIONS
 function	ft_register() {
-	casper.log("NEW WEEK PUBLISHED, LEGO !", 'info');
-	
+	casper.exit();
 }
 
-function	ft_retry_later() {
-	casper.log("New week is not published yet. Ten seconds before retry", 'info');
-	casper.click('a.navbar-brand');
-	casper.wait(RETRY_TIME);
-	casper.waitForSelector('i.fa.fa-calendar.fa-lg.fa-fw', function() {
-		casper.click("i.fa.fa-calendar.fa-lg.fa-fw");
-		casper.waitForText(START_DATE, ft_register(), ft_retry_later());
-	});
+function	check() {
+	//casper.debugHTML();
+	if (casper.getPageContent().indexOf("15.-21. Feb") !== -1) {
+		console.log("BANZAIII");
+		casper.log("DATE MOTHAFUCKIN FOUNDED");
+		ft_register();
+	} else {
+		console.log("nope");
+		casper.log("Nope. Ten seconds before retry", 'info');
+		casper.wait(RETRY_TIME).thenClick('a.navbar-brand').thenClick("i.fa.fa-calendar.fa-lg.fa-fw").then(check);
+		casper.wait(500);
+	}
 }
 
 // ====		LANCEMENT DES HOSTILITES
@@ -35,7 +38,7 @@ casper.start('https://stuart.staffomaticapp.com', function() {
 		casper.click("#login-form button");
 		casper.waitForSelector('i.fa.fa-calendar.fa-lg.fa-fw', function() {
 			casper.click("i.fa.fa-calendar.fa-lg.fa-fw");
-			casper.waitForText(START_DATE, ft_register(), ft_retry_later());
+			casper.waitForSelector('div.schedule-item-container.active').then(check);
 		});
 	});
 });
