@@ -1,10 +1,7 @@
-// casperjs --engine=slimerjs tryomatic.js
-
 // ====		GLOBALS
-var url = "https://sandboxy.staffomaticapp.com"
-var login = "harryfaitdestrucs@gmail.com"
-var passw = "42310102S"
-
+var url = "https://stuart.staffomaticapp.com"
+var login = "harry.gueguen@gmail.com"
+var passw = "42310102Ss"
 var weeknum = 14
 var NAME_DEPARTMENT = "8ème arrondissement"
 var NAME_DEPARTMENT1 = "17ème arrondissement"
@@ -72,7 +69,6 @@ function	ft_register_core(list, i) {
 }
 
 function	ft_register() {
-	taken_wishes = taken_wishes.concat(dim_wishes.reverse(), sam_wishes.reverse(), ven_wishes.reverse(), jeu_wishes.reverse(), mer_wishes.reverse(), mar_wishes.reverse(), lun_wishes.reverse());
 	casper.waitFor(function() {
 		if (casper.getPageContent().split('ccc-category-color').some(function (str) {
 			if (str.indexOf(NAME_DEPARTMENT) !== -1 && str.indexOf("8:00") !== -1)
@@ -123,7 +119,7 @@ function	ft_register() {
 			x++;
 		}
 		casper.echo("## List of " + to_do_list.length + " shifts ready to be checked", "COMMENT");
-		//ft_register_core(to_do_list, 0);
+		ft_register_core(to_do_list, 0);
 	}, function() {
 		casper.echo("NOPE");
 		casper.debugHTML();
@@ -175,9 +171,7 @@ casper.start(url, function() {
 		casper.click("#login-form button");
 		casper.waitForSelector("img.img-rounded.media-object", function () {
 			casper.click("img.img-rounded.media-object");
-			casper.waitForSelector('div.schedule-item-container', function () {
-				check();
-			});
+			casper.wait(1000).then(check);
 		});
 	});
 });
