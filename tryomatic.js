@@ -1,29 +1,29 @@
 // casperjs --engine=slimerjs tryomatic.js
 
 // ====		GLOBALS
-var url = "https://sandboxy.staffomaticapp.com"
-var login = "harryfaitdestrucs@gmail.com"
-var passw = "42310102S"
+var url = "https://stuart.staffomaticapp.com"
+var login = "harry.gueguen@gmail.com"
+var passw = "42310102Ss"
 
-var weeknum = 14
-var NAME_DEPARTMENT = "8ème arrondissement"
-var NAME_DEPARTMENT1 = "17ème arrondissement"
+var weeknum = 18
+var NAME_DEPARTMENT = "16ème arrondissement"
+var NAME_DEPARTMENT1 = "8ème arrondissement"
 var departments = [NAME_DEPARTMENT, NAME_DEPARTMENT1]
 var	RETRY_TIME = 5000
-var WAIT_MAX = 500
+var WAIT_MAX = 5000
 var page_string
 var page_array
 var array_len
 var span = "span."
 var hrefbegin = "a#schedule-"
 var hrefend = ".panel.panel-default"
-var lun_wishes = ["8:00 - 11:30", "11:15 - 14:30", "14:15 - 18:30"]
-var mar_wishes = ["11:15 - 14:30", "14:15 - 18:30"]
-var mer_wishes = []
-var jeu_wishes = []
+var lun_wishes = ["8:00 - 11:30"]
+var mar_wishes = ["8:00 - 11:30"]
+var mer_wishes = ["8:00 - 11:30"]
+var jeu_wishes = ["8:00 - 11:30"]
 var ven_wishes = []
 var sam_wishes = []
-var dim_wishes = ["8:00 - 11:30", "11:15 - 14:30", "14:15 - 18:30"]
+var dim_wishes = []
 var wishes = [lun_wishes, mar_wishes, mer_wishes, jeu_wishes, ven_wishes, sam_wishes, dim_wishes]
 var to_do_list = []
 var taken_wishes = []
@@ -42,20 +42,21 @@ function	ft_register_core(list, i) {
 		return ;
 	//casper.echo(i);
 	casper.waitForSelector(list[i], function () {
-		casper.click(list[i]);
+		casper.move(list[i]);
+		//casper.click(list[i]);
 		casper.waitForSelector("button.btn.btn-default.action-assign", function () {
-			casper.click("button.btn.btn-default.action-assign");
+			//casper.click("button.btn.btn-default.action-assign");
 			casper.echo(i + " Clicked");
 			casper.waitForSelector("button.close", function () {
 				casper.click("button.close");
-				casper.echo(i + "Closed");
+				//casper.echo(i + "Closed");
 				ft_register_core(list, i + 1);
 			}, function () {
-				casper.echo(i + "Timeout for close");
+				//casper.echo(i + "Timeout for close");
 				ft_register_core(list, i + 1);
 			}, WAIT_MAX);
 		}, function () {
-			casper.echo(i + "Timeout for assign");
+			//casper.echo(i + "Timeout for assign");
 			casper.waitForSelector("button.close", function () {
 				casper.click("button.close");
 				casper.echo(i + "Closed");
@@ -123,7 +124,7 @@ function	ft_register() {
 			x++;
 		}
 		casper.echo("## List of " + to_do_list.length + " shifts ready to be checked", "COMMENT");
-		//ft_register_core(to_do_list, 0);
+		ft_register_core(to_do_list, 0);
 	}, function() {
 		casper.echo("NOPE");
 		casper.debugHTML();
