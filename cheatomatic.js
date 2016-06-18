@@ -1,5 +1,5 @@
 // ====		GLOBALS
-var url = "https://maysandbox.staffomaticapp.com"
+var url = "https://junesand.staffomaticapp.com"
 var login = "harry.jmg@gmail.com"
 var passw = "42310102S"
 
@@ -8,9 +8,9 @@ var passw = "42310102S"
 // var passw = "42310102Ss"
 
 var return_val
-var weeknum = 19
-var NAME_DEPARTMENT = "17ème arrondissement"
-var NAME_DEPARTMENT1 = "8ème arrondissement"
+var weeknum = 25
+var NAME_DEPARTMENT = "8ème arrondissement"
+var NAME_DEPARTMENT1 = "17ème arrondissement"
 var departments = [NAME_DEPARTMENT, NAME_DEPARTMENT1]
 var dept_num = 0
 var	RETRY_TIME = 5000
@@ -22,7 +22,7 @@ var span = "span."
 var hrefbegin = "a#schedule-"
 var hrefend = ".panel.panel-default"
 var lun_wishes = ["8:00 - 11:30"]
-var mar_wishes = []
+var mar_wishes = ["8:00 - 11:30"]
 var mer_wishes = ["8:00 - 11:30"]
 var jeu_wishes = ["8:00 - 11:30"]
 var ven_wishes = ["8:00 - 11:30"]
@@ -80,61 +80,76 @@ function		get_elements_code(dept_no) {
 	return (element_list);
 }
 
+//*[@id="opentip-19"]/div/div[2]/div/p/small
+
 function		take_that_shift(todo_lists, n_shift, n_dept, taken) {
-	//casper.echo(n_dept + " " + todo_lists.length + " " + todo_lists[n_dept][n_shift]);
 	if (n_dept == todo_lists.length)
 	{
 		//casper.echo("B");
 		return_val = 0;
 		return ;
 	}
-	casper.wait(1000, function () {
+	casper.wait(500, function () {
 		casper.waitForSelector(todo_lists[n_dept][n_shift], function () {
-			casper.click(todo_lists[n_dept][n_shift]);
-			//casper.mouse.move(todo_lists[n_dept][n_shift]);
-			//casper.mouseEvent('mousemove', todo_lists[n_dept][n_shift]);
-
-			casper.waitFor(function check() {
-				if (casper.exists("button.btn.btn-default.action-assign"))
-					return (1);
-				if (casper.exists("button.btn.btn-default.action-apply"))
-					return (1);
-				if (casper.exists("button.btn.btn-default.action-remove"))
-					return (1);
-				if (casper.getPageContent.indexOf("You are assigned to this shift") !== -1)
-					return (1);
-				return (0);
-			}, function then() {
-				if (casper.exists("button.btn.btn-default.action-assign")) {
-					casper.click("button.btn.btn-default.action-assign");
-					casper.echo("Shift (" + n_shift + ") in "  + departments[n_dept] + " : Ok", "PARAMETER");
-					casper.waitForSelector("button.close", function () {
-						casper.wait(500, function() {
-							casper.click("button.close");
-							return_val = 1;
-							return ;
-						})
-					});
-					
-				}
-				else {
-					casper.echo("Shift (" + n_shift + ") in "  + departments[n_dept] + " : Nope (fast)", "PARAMETER");
+			casper.evaluate(function(the_selector) {
+				$(the_selector).trigger("mouseenter");
+			}, todo_lists[n_dept][n_shift]);
+			var z_sp = casper.getPageContent().split('opentip');
+			var z_st = z_sp[3].indexOf("danger") + 8;
+			var z_en = z_sp[3].indexOf("</span>");
+			var taken_places = parseInt(z_sp[3].slice(z_st, z_st + 2));
+			var total_places = parseInt(z_sp[3].slice(z_en - 2, z_en));
+			if (taken_places < total_places) {
+				casper.click(todo_lists[n_dept][n_shift]);
+				casper.waitFor(function check() {
+					if (casper.exists("button.btn.btn-default.action-assign"))
+						return (1);
+					if (casper.exists("button.btn.btn-default.action-apply"))
+						return (1);
+					if (casper.exists("button.btn.btn-default.action-remove"))
+						return (1);
+					if (casper.getPageContent.indexOf("You are assigned to this shift") !== -1)
+						return (1);
+					return (0);
+				}, function then() {
+					if (casper.exists("button.btn.btn-default.action-assign")) {
+						casper.click("button.btn.btn-default.action-assign");
+						casper.echo("Shift (" + n_shift + ") in "  + departments[n_dept] + " : Ok", "PARAMETER");
+						casper.waitForSelector("button.close", function () {
+							casper.wait(500, function() {
+								casper.click("button.close");
+								return_val = 1;
+								return ;
+							});
+						});
+					}
+					else {
+						casper.echo("Shift (" + n_shift + ") in "  + departments[n_dept] + " : Nope (assign missing)", "PARAMETER");
+						casper.waitForSelector("button.close", function () {
+							casper.wait(500, function() {
+								casper.click("button.close");
+								return_val = 0;
+								take_that_shift(todo_lists, n_shift, n_dept + 1);
+								return ;
+							});
+						});
+					}
+				}, function onTimeOut() {
+					casper.echo("Shift (" + n_shift + ") in "  + departments[n_dept] + " : Nope (timeout)", "PARAMETER");
 					casper.waitForSelector("button.close", function () {
 						casper.click("button.close");
 						return_val = 0;
 						take_that_shift(todo_lists, n_shift, n_dept + 1);
 						return ;
 					});
-				}
-			}, function onTimeOut() {
-				casper.echo("Shift (" + n_shift + ") in "  + departments[n_dept] + " : Nope (timeout)", "PARAMETER");
-				casper.waitForSelector("button.close", function () {
-					casper.click("button.close");
-					return_val = 0;
-					take_that_shift(todo_lists, n_shift, n_dept + 1);
-					return ;
-				});
-			}, 1000);
+				}, 2000);
+			} else {
+				casper.echo("Shift (" + n_shift + ") in "  + departments[n_dept] + " : Nope (full)", "PARAMETER");
+				return_val = 0;
+				take_that_shift(todo_lists, n_shift, n_dept + 1);
+				return ;
+			}
+			
 		});	
 	});
 }
@@ -157,7 +172,7 @@ function		take_them_all(todo_lists, n_shift) {
 			casper.echo("## # Fail", "WARNING");
 		return_val = 'undefined';
 		return (take_them_all(todo_lists, n_shift + 1));
-	})
+	});
 }
 
 function		register_page_actions() {
@@ -188,7 +203,6 @@ function		go_to_register_page() {
 	var			start_index;
 	var			end_index;
 	var			event_str;
-
 	page_string = casper.getPageContent();
 	page_splitted = page_string.split('schedule-item-container');
 	good_part_index = page_splitted.findIndex(function (str) {
@@ -224,6 +238,7 @@ function		is_new_week_found() {
 }
 
 function		check() {
+	casper.echo("## Checking...", "PARAMETER");
 	if (is_new_week_found())
 		return (go_to_register_page());
 	casper.reload(function() {
@@ -242,7 +257,13 @@ casper.start(url, function() {
 			casper.click("img.img-rounded.media-object");
 			casper.waitForSelector('div.schedule-item-container', function () {
 				return check();
+			}, function () {
+				casper.echo("ONE");
+				casper.echo(casper.getPageContent());
 			});
+		}, function () {
+			casper.echo("TWO");
+			casper.echo(casper.getPageContent());
 		});
 	});
 });
