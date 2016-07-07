@@ -1,19 +1,19 @@
 // ====		GLOBALS
-var url = "https://junesand.staffomaticapp.com"
-var login = "harry.jmg@gmail.com"
-var passw = "42310102S"
+// var url = "https://junesand.staffomaticapp.com"
+// var login = "harry.jmg@gmail.com"
+// var passw = "42310102S"
 
-// var url = "https://stuart.staffomaticapp.com"
-// var login = "harry.gueguen@gmail.com"
-// var passw = "42310102Ss"
+var url = "https://stuart.staffomaticapp.com"
+var login = "harry.gueguen@gmail.com"
+var passw = "42310102Ss"
 
 var return_val
-var weeknum = 25
-var NAME_DEPARTMENT = "8ème arrondissement"
-var NAME_DEPARTMENT1 = "17ème arrondissement"
-var departments = [NAME_DEPARTMENT, NAME_DEPARTMENT1]
+var weeknum = 27
+var departments = [
+	"18ème arrondissement"
+	]
 var dept_num = 0
-var	RETRY_TIME = 5000
+var	RETRY_TIME = 8000
 var WAIT_MAX = 5000
 var page_string
 var page_array
@@ -21,13 +21,13 @@ var array_len
 var span = "span."
 var hrefbegin = "a#schedule-"
 var hrefend = ".panel.panel-default"
-var lun_wishes = ["8:00 - 11:30"]
-var mar_wishes = ["8:00 - 11:30"]
-var mer_wishes = ["8:00 - 11:30"]
-var jeu_wishes = ["8:00 - 11:30"]
-var ven_wishes = ["8:00 - 11:30"]
-var sam_wishes = ["8:00 - 11:30"]
-var dim_wishes = ["8:00 - 11:30"]
+var lun_wishes = ["8:00 - 11:30", "11:15 - 14:30", "14:30 - 19:00"]
+var mar_wishes = ["8:00 - 11:30", "11:15 - 14:30", "14:30 - 19:00"]
+var mer_wishes = ["8:00 - 11:30", "11:15 - 14:30", "14:30 - 19:00"]
+var jeu_wishes = ["8:00 - 11:30", "11:15 - 14:30", "14:30 - 19:00"]
+var ven_wishes = ["8:00 - 11:30", "11:15 - 14:30", "14:30 - 19:00"]
+var sam_wishes = ["8:00 - 11:30", "11:15 - 14:30"]
+var dim_wishes = ["8:00 - 11:30", "11:15 - 14:30"]
 var wishes = [lun_wishes, mar_wishes, mer_wishes, jeu_wishes, ven_wishes, sam_wishes, dim_wishes]
 var to_do_list = []
 
@@ -35,7 +35,7 @@ var to_do_list = []
 var casper = require('casper').create({
 	verbose: true
 });
-casper.options.waitTimeout = 10000;
+casper.options.waitTimeout = 15000;
 casper.options.viewportSize = {width: 1600, height: 950};
 var mouse = require("mouse").create(casper);
 
@@ -80,41 +80,38 @@ function		get_elements_code(dept_no) {
 	return (element_list);
 }
 
-//*[@id="opentip-19"]/div/div[2]/div/p/small
-
 function		take_that_shift(todo_lists, n_shift, n_dept, taken) {
 	if (n_dept == todo_lists.length)
 	{
-		//casper.echo("B");
 		return_val = 0;
 		return ;
 	}
-	casper.wait(500, function () {
-		casper.waitForSelector(todo_lists[n_dept][n_shift], function () {
-			casper.evaluate(function(the_selector) {
-				$(the_selector).trigger("mouseenter");
-			}, todo_lists[n_dept][n_shift]);
-			var z_sp = casper.getPageContent().split('opentip');
-			var z_st = z_sp[3].indexOf("danger") + 8;
-			var z_en = z_sp[3].indexOf("</span>");
-			var taken_places = parseInt(z_sp[3].slice(z_st, z_st + 2));
-			var total_places = parseInt(z_sp[3].slice(z_en - 2, z_en));
-			if (taken_places < total_places) {
-				casper.click(todo_lists[n_dept][n_shift]);
-				casper.waitFor(function check() {
-					if (casper.exists("button.btn.btn-default.action-assign"))
-						return (1);
-					if (casper.exists("button.btn.btn-default.action-apply"))
-						return (1);
-					if (casper.exists("button.btn.btn-default.action-remove"))
-						return (1);
-					if (casper.getPageContent.indexOf("You are assigned to this shift") !== -1)
-						return (1);
-					return (0);
-				}, function then() {
+	casper.waitForSelector(todo_lists[n_dept][n_shift], function () {
+		casper.evaluate(function(the_selector) {
+			$(the_selector).trigger("mouseenter");
+		}, todo_lists[n_dept][n_shift]);
+		var z_sp = casper.getPageContent().split('opentip');
+		var z_st = z_sp[3].indexOf("danger") + 8;
+		var z_en = z_sp[3].indexOf("</span>");
+		var taken_places = parseInt(z_sp[3].slice(z_st, z_st + 2));
+		var total_places = parseInt(z_sp[3].slice(z_en - 2, z_en));
+		if (taken_places < total_places) {
+			casper.click(todo_lists[n_dept][n_shift]);
+			casper.waitFor(function check() {
+				if (casper.exists("button.btn.btn-default.action-assign"))
+					return (1);
+				if (casper.exists("button.btn.btn-default.action-apply"))
+					return (1);
+				if (casper.exists("button.btn.btn-default.action-remove"))
+					return (1);
+				if (casper.getPageContent.indexOf("You are assigned to this shift") !== -1)
+					return (1);
+				return (0);
+			}, function then() {
+				casper.wait(500, function () {
 					if (casper.exists("button.btn.btn-default.action-assign")) {
 						casper.click("button.btn.btn-default.action-assign");
-						casper.echo("Shift (" + n_shift + ") in "  + departments[n_dept] + " : Ok", "PARAMETER");
+						casper.echo("Shift (" + n_shift + ") in "  + departments[n_dept] + " : Ok (" + taken_places + " / " + total_places + ")", "INFO");
 						casper.waitForSelector("button.close", function () {
 							casper.wait(500, function() {
 								casper.click("button.close");
@@ -124,7 +121,7 @@ function		take_that_shift(todo_lists, n_shift, n_dept, taken) {
 						});
 					}
 					else {
-						casper.echo("Shift (" + n_shift + ") in "  + departments[n_dept] + " : Nope (assign missing)", "PARAMETER");
+						casper.echo("Shift (" + n_shift + ") in "  + departments[n_dept] + " : Nope (assign missing)", "WARNING");
 						casper.waitForSelector("button.close", function () {
 							casper.wait(500, function() {
 								casper.click("button.close");
@@ -134,23 +131,22 @@ function		take_that_shift(todo_lists, n_shift, n_dept, taken) {
 							});
 						});
 					}
-				}, function onTimeOut() {
-					casper.echo("Shift (" + n_shift + ") in "  + departments[n_dept] + " : Nope (timeout)", "PARAMETER");
-					casper.waitForSelector("button.close", function () {
-						casper.click("button.close");
-						return_val = 0;
-						take_that_shift(todo_lists, n_shift, n_dept + 1);
-						return ;
-					});
-				}, 2000);
-			} else {
-				casper.echo("Shift (" + n_shift + ") in "  + departments[n_dept] + " : Nope (full)", "PARAMETER");
-				return_val = 0;
-				take_that_shift(todo_lists, n_shift, n_dept + 1);
-				return ;
-			}
-			
-		});	
+				});
+			}, function onTimeOut() {
+				casper.echo("Shift (" + n_shift + ") in "  + departments[n_dept] + " : Nope (timeout)", "WARNING");
+				casper.waitForSelector("button.close", function () {
+					casper.click("button.close");
+					return_val = 0;
+					take_that_shift(todo_lists, n_shift, n_dept + 1);
+					return ;
+				});
+			}, 2000);
+		} else {
+			casper.echo("Shift (" + n_shift + ") in "  + departments[n_dept] + " : Nope (full) (" + taken_places + " / " + total_places + ")", "WARNING");
+			return_val = 0;
+			take_that_shift(todo_lists, n_shift, n_dept + 1);
+			return ;
+		}
 	});
 }
 
@@ -159,7 +155,6 @@ function		take_them_all(todo_lists, n_shift) {
 
 	if (n_shift == todo_lists[0].length)
 		return ;
-	//casper.echo("A");
 	take_that_shift(todo_lists, n_shift, 0, 0);
 	casper.waitFor(function check() {
 		if (return_val !== 'undefined')
@@ -227,7 +222,9 @@ function		go_to_register_page() {
 			return (1);
 		return (0);
 	}, function () {
-		register_page_actions();
+		casper.wait(1000, function () {
+			register_page_actions();
+		});
 	});
 }
 
