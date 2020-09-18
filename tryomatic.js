@@ -3,7 +3,7 @@
 // ====		GLOBALS
 var url = "https://stuart.staffomaticapp.com"
 var login = "harry.gueguen@gmail.com"
-var passw = "42310102Ss"
+var passw = "password"
 
 var weeknum = 18
 var NAME_DEPARTMENT = "16ème arrondissement"
